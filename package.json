@@ -18,20 +18,31 @@
         "onStartupFinished"
     ],
     "contributes": {
+        "configuration": {
+            "title": "Sarif Directory",
+            "properties": {
+                "cppsarif.sarifDirectory": {
+                    "type": "string",
+                    "description": "Path to compiler output sarif directory. Requires: containing single or multiple .sarif files. Default: '.'",
+                    "default": "."
+                }
+            }
+        },
+        "views": {
+            "sarif": [
+                {
+                    "id": "sarifView",
+                    "name": "sarifView",
+                    "icon": "share/activitybar.svg"
+                }
+            ]
+        },
         "viewsContainers": {
             "activitybar": [
                 {
                     "id": "sarif",
                     "title": "sarif",
                     "icon": "share/activitybar.svg"
-                }
-            ]
-        },
-        "views": {
-            "sarif": [
-                {
-                    "id": "sarifView",
-                    "name": "sarifView"
                 }
             ]
         }
