@@ -1,4 +1,4 @@
-const vscode = require('vscode')
+let vscode = require("vscode")
 
 class Sarif {
     constructor(directory) {
