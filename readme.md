@@ -1,6 +1,6 @@
 # Cppsarif: Tree View for C++ Compiler Output
 
-Cppsarif is a VS Code extension that organizes linear C++ compiler output into a clear tree view.
+Cppsarif is a vscode extension that organizes linear C++ compiler output into a clear tree view.
 
 ## Show
 
