@@ -19,11 +19,11 @@
     ],
     "contributes": {
         "configuration": {
-            "title": "Sarif Directory",
+            "title": "Cppsarif",
             "properties": {
                 "cppsarif.sarifDirectory": {
                     "type": "string",
-                    "description": "Path to compiler output sarif directory. Requires: containing single or multiple .sarif files. Default: '.'",
+                    "markdownDescription": "Path to compiler output sarif directory. Requires: containing single or multiple `.sarif` files. Default: `.`",
                     "default": "."
                 }
             }
