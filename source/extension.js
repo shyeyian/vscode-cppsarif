@@ -89,7 +89,7 @@ class SarifResult {
         return {
             iconPath: getIconPath(this.level),
             label: this.message.text,
-            command: showPhysicalLocation(this.locations[this.locationIndex % this.locations.length].physicalLocation, this.parentRun.originalUriBaseIds),
+            command: this.locations != undefined ? showPhysicalLocation(this.locations[this.locationIndex % this.locations.length].physicalLocation, this.parentRun.originalUriBaseIds) : undefined,
             collapsibleState: this.getChildren().length >= 1 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None
         }
     }
