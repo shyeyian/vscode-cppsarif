@@ -170,8 +170,8 @@ let sarifFocusDaemon = vscode.tasks.onDidEndTask(task => {
 let showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysicalLocation', async (physicalLocation, originalUriBaseIds) => {
     let editor = await vscode.window.showTextDocument(
         physicalLocation.artifactLocation.uriBaseId != undefined ? 
-            vscode.Uri.parse(`${originalUriBaseIds[physicalLocation.artifactLocation.uriBaseId].uri}/${physicalLocation.artifactLocation.uri}`) : 
-            vscode.Uri.file(`${physicalLocation.artifactLocation.uri}`),
+            vscode.Uri.joinPath(vscode.Uri.parse(originalUriBaseIds[physicalLocation.artifactLocation.uriBaseId].uri), physicalLocation.artifactLocation.uri) : 
+            vscode.Uri.parse(physicalLocation.artifactLocation.uri),
         {preview: false}
     )
     let selectBegin = new vscode.Position(
