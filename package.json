@@ -4,7 +4,7 @@
     "description": "cppsarif",
     "icon": "share/icon.png",
     "publisher": "anonymouspc",
-    "version": "1.1.17",
+    "version": "1.1.18",
     "engines": {
         "vscode": "^1.100.0"
     },
