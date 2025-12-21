@@ -9,5 +9,5 @@ catch (error) {
     // pass
 }
 
-child_process.execSync(`vsce publish patch -p ${fs.readFileSync("../token/vsce.personal-access.token")}`)
+child_process.execSync(`vsce publish patch --pat ${fs.readFileSync("../token/vsce.personal-access.token")}`)
 child_process.execSync("git push")
