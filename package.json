@@ -2,38 +2,26 @@
     "name": "cppsarif",
     "displayName": "cppsarif",
     "description": "cppsarif",
-    "icon": "share/icon.png",
+    "icon": "share/package.png",
     "publisher": "anonymouspc",
     "version": "1.1.24",
     "engines": {
         "vscode": "^1.100.0"
     },
     "categories": [
-        "Debuggers",
-        "Language Packs",
-        "Themes"
+        "Language Packs"
     ],
-    "main": "source/extension.js",
+    "main": "view/sarif.js",
     "activationEvents": [
         "onStartupFinished"
     ],
     "contributes": {
-        "configuration": {
-            "title": "Cppsarif",
-            "properties": {
-                "cppsarif.sarifDirectory": {
-                    "type": "string",
-                    "markdownDescription": "Path to compiler output sarif directory. Requires: containing single or multiple `.sarif` files. Default: `.`",
-                    "default": "."
-                }
-            }
-        },
         "views": {
             "sarif": [
                 {
                     "id": "sarifView",
                     "name": "sarifView",
-                    "icon": "share/activitybar.svg"
+                    "icon": "view/activity-bar.svg"
                 }
             ]
         },
@@ -42,9 +30,19 @@
                 {
                     "id": "sarif",
                     "title": "sarif",
-                    "icon": "share/activitybar.svg"
+                    "icon": "view/activity-bar.svg"
                 }
             ]
+        },
+        "configuration": {
+            "title": "cppsarif",
+            "properties": {
+                "cppsarif.sarifDirectory": {
+                    "type": "string",
+                    "markdownDescription": "Path to compiler output sarif directory. Requires: containing single or multiple `.sarif` files. Default: `.`",
+                    "default": "."
+                }
+            }
         }
     },
     "repository": {
