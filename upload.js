@@ -1,13 +1,29 @@
-let child_process = require("child_process")
-let fs = require("fs")
+import fs from "fs";
+import child_process from "child_process"
+import util from "util"
+child_process.promises = new Object()
+child_process.promises.exec = util.promisify(child_process.exec)
 
-child_process.execSync("git pull")
+// Git pull
+await child_process.promises.exec("git pull")
+
+// Git commit
 try {
-    child_process.execSync("git add .")
-    child_process.execSync("git commit -m update")
+    await child_process.promises.exec("git add .")
+    await child_process.promises.exec("git commit -m update")
+} catch (_) { }
+
+// Vsce upload
+try {
+    await fs.promises.access("vsce-token.txt")
+} catch (_) {
+    throw new Error("failed to upload vscode extension because vsce-token.txt is not found")
 }
-catch (error) { 
-    // pass
+try {
+    await child_process.promises.exec(`vsce publish patch --pat ${await fs.promises.readFile("vsce-token.txt")}`)
+} catch (_) {
+    throw new Error("failed to upload vsce extension") // Avoid vsce-token to be printed in error.
 }
-child_process.execSync(`vsce publish patch --pat ${fs.readFileSync("vsce-token.txt")}`)
-child_process.execSync("git push")
+
+// Git push
+await child_process.promises.exec("git push")

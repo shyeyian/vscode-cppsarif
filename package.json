@@ -11,6 +11,10 @@
     "categories": [
         "Language Packs"
     ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/anonymouspc/cppsarif"
+    },
     "main": "view/sarif.js",
     "activationEvents": [
         "onStartupFinished"
@@ -44,9 +48,5 @@
                 }
             }
         }
-    },
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/anonymouspc/cppsarif"
     }
 }
