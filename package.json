@@ -21,7 +21,7 @@
                 {
                     "id": "sarifView",
                     "name": "%title%",
-                    "icon": "view/activity-bar.svg"
+                    "icon": "$(issues)"
                 }
             ]
         },
@@ -30,7 +30,7 @@
                 {
                     "id": "sarif",
                     "title": "%title%",
-                    "icon": "view/activity-bar.svg"
+                    "icon": "$(issues)"
                 }
             ]
         },
