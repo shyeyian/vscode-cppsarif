@@ -3,7 +3,7 @@
     "displayName": "cppsarif",
     "description": "cppsarif",
     "icon": "share/package.png",
-    "publisher": "anonymouspc",
+    "publisher": "shyeyian",
     "version": "1.1.38",
     "engines": {
         "vscode": "^1.100.0"
@@ -13,7 +13,7 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/anonymouspc/vscode-cppsarif"
+        "url": "https://github.com/shyeyian/vscode-cppsarif"
     },
     "main": "view/sarif.js",
     "activationEvents": [
