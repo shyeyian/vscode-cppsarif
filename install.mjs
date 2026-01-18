@@ -1,9 +1,10 @@
-import child_process from "child_process"
-import util from "util"
+import child_process from 'child_process'
+import fs            from 'fs'
+import util          from 'util'
 child_process.promises = new Object()
-child_process.promises.exec = util.promisify(child_process.exec)
+child_process.promises.execFile = util.promisify(child_process.execFile)
 
 // Install extension
-await child_process.promises.exec("vsce package")
-await child_process.promises.exec("code --install-extension *.vsix")
-await child_process.promises.exec("rm *.vsix")
+await child_process.promises.execFile('vsce', ['package', '-o', 'cpptheme.vsix'])
+await child_process.promises.execFile('code', ['--install-extension', 'cpptheme.vsix'])
+await fs.promises.rm('cpptheme.vsix')
