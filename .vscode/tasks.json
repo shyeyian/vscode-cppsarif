@@ -3,20 +3,20 @@
     "tasks": [
         {
             "label": "install",
-            "detail": "node install.mjs",
+            "detail": "node install.js",
             "group": "build",
             "command": "node",
             "args": [
-                "install.mjs"
+                "install.js"
             ]
         },
         {
             "label": "upload",
-            "detail": "node upload.mjs",
+            "detail": "node upload.js",
             "group": "build",
             "command": "node",
             "args": [
-                "upload.mjs"
+                "upload.js"
             ]
         }
     ]
