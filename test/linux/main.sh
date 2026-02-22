@@ -1,0 +1,1 @@
+g++ -std=c++26 -fdiagnostics-add-output=sarif:file=test/linux/main.sarif test/linux/main.cpp -o /dev/null
