@@ -1,4 +1,4 @@
-let vscode = require("vscode")
+const vscode = require("vscode")
 
 class Sarif {
     constructor(directory) {
@@ -13,13 +13,13 @@ class Sarif {
 
     async getChildren(entry) {
         if (entry == undefined) {
-            let sarifFiles = []
-            for (let workspaceFolder of vscode.workspace.workspaceFolders)
+            const sarifFiles = []
+            for (const workspaceFolder of vscode.workspace.workspaceFolders)
                 try {
-                    for (let [name, fileType] of await vscode.workspace.fs.readDirectory(vscode.Uri.joinPath(workspaceFolder.uri, this.directory)))
+                    for (const [name, fileType] of await vscode.workspace.fs.readDirectory(vscode.Uri.joinPath(workspaceFolder.uri, this.directory)))
                         if (name.endsWith(".sarif") && fileType == vscode.FileType.File) {
                             try {
-                                let sarifFile = await SarifFile.readFrom(vscode.Uri.joinPath(workspaceFolder.uri, this.directory, name))
+                                const sarifFile = await SarifFile.readFrom(vscode.Uri.joinPath(workspaceFolder.uri, this.directory, name))
                                 if (sarifFile.getChildren().length >= 1)
                                     sarifFiles.push(sarifFile)
                             }
@@ -44,12 +44,12 @@ class Sarif {
 
 class SarifFile {
     static async readFrom(uri) {
-        let sarifFile = new SarifFile()
+        const sarifFile = new SarifFile()
         Object.assign(sarifFile, JSON.parse(Buffer.from(await vscode.workspace.fs.readFile(uri)).toString("utf-8")))
         sarifFile.uri      = uri
         sarifFile.children = []
-        for (let run of sarifFile.runs)
-            for (let result of run.results)
+        for (const run of sarifFile.runs)
+            for (const result of run.results)
                 sarifFile.children.push(new SarifResult(result, run))
         return sarifFile
     }
@@ -74,10 +74,10 @@ class SarifResult {
         this.children  = []
         this.locationIndex = 0
         if (this.relatedLocations != undefined) {
-            let mountable = new Map([[-1, this], [0, this]])
-            for (let relatedLocation of this.relatedLocations)
+            const mountable = new Map([[-1, this], [0, this]])
+            for (const relatedLocation of this.relatedLocations)
                 if (relatedLocation.message != undefined) {
-                    let sarifRelatedLocation = new SarifRelatedLocation(relatedLocation, this.parentRun)
+                    const sarifRelatedLocation = new SarifRelatedLocation(relatedLocation, this.parentRun)
                     mountable.get(relatedLocation.properties.nestingLevel - 1).mountChild(sarifRelatedLocation)
                     mountable.set(relatedLocation.properties.nestingLevel, sarifRelatedLocation)  
                 }                        
@@ -144,22 +144,22 @@ function showPhysicalLocation(physicalLocation, originalUriBaseIds) {
     }
 }
 
-let sarif = new Sarif(vscode.workspace.getConfiguration("cppsarif").get("sarifDirectory"))
+const sarif = new Sarif(vscode.workspace.getConfiguration("cppsarif").get("sarifDirectory"))
 
-let sarifView = vscode.window.createTreeView("sarifView", {
+const sarifView = vscode.window.createTreeView("sarifView", {
     treeDataProvider: sarif
 })
 
-let sarifRefreshCommand = vscode.commands.registerCommand("sarifRefresh", () => {
+const sarifRefreshCommand = vscode.commands.registerCommand("sarifRefresh", () => {
     sarif.refresh()
 })
 
-let sarifRefreshDaemon = sarifView.onDidChangeVisibility(view => {
+const sarifRefreshDaemon = sarifView.onDidChangeVisibility(view => {
     if (view.visible)
         vscode.commands.executeCommand("sarifRefresh")
 })
 
-let sarifFocusDaemon = vscode.tasks.onDidEndTask(task => {
+const sarifFocusDaemon = vscode.tasks.onDidEndTask(task => {
     if (task.exitCode != 0) {
         vscode.commands.executeCommand("sarifRefresh")
         if (sarif.getChildren().length >= 1)
@@ -167,18 +167,18 @@ let sarifFocusDaemon = vscode.tasks.onDidEndTask(task => {
     }
 })
 
-let showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysicalLocation', async (physicalLocation, originalUriBaseIds) => {
-    let editor = await vscode.window.showTextDocument(
+const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysicalLocation', async (physicalLocation, originalUriBaseIds) => {
+    const editor = await vscode.window.showTextDocument(
         physicalLocation.artifactLocation.uriBaseId != undefined ? 
             vscode.Uri.joinPath(vscode.Uri.parse(originalUriBaseIds[physicalLocation.artifactLocation.uriBaseId].uri), physicalLocation.artifactLocation.uri) : 
             vscode.Uri.parse(physicalLocation.artifactLocation.uri),
         {preview: false}
     )
-    let selectBegin = new vscode.Position(
+    const selectBegin = new vscode.Position(
         physicalLocation.region.startLine   - 1, 
         physicalLocation.region.startColumn - 1
     )
-    let selectEnd = new vscode.Position(
+    const selectEnd = new vscode.Position(
         physicalLocation.region.endLine != undefined ? 
             physicalLocation.region.endLine   - 1 :
             physicalLocation.region.startLine - 1, 

@@ -6,7 +6,6 @@ child_process.promises.execFile = util.promisify(child_process.execFile)
 
 async function main() {
     // Git pull
-    child_process.execFile
     await child_process.promises.execFile('git', ['pull'])
 
     // Git commit
