@@ -197,7 +197,7 @@ const sarifRefreshDaemon = sarifView.onDidChangeVisibility(view => {
         vscode.commands.executeCommand('sarifRefreshCommand')
 })
 
-const sarifFocusDaemon = vscode.tasks.onDidEndTask(async task => {
+const sarifFocusDaemon = vscode.tasks.onDidEndTask(async event => {
     vscode.commands.executeCommand('sarifRefresh')
     if ((await sarif.getChildren()).length >= 1)
         vscode.commands.executeCommand('sarifView.focus')
