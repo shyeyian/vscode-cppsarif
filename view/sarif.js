@@ -1,3 +1,6 @@
+// @ts-check
+
+const path   = require('path')
 const vscode = require('vscode')
 module.exports = {activate}
 
@@ -13,41 +16,79 @@ function activate(context) {
     context.subscriptions.push(showPhysicalLocationCommand)
 }
 
+/**
+ * @implements {vscode.TreeDataProvider<SarifFile | SarifResult | SarifRelatedLocation>}
+ */
 class Sarif {
-    /**
-     * @param {string} directory
-     */
-    constructor(directory) {
-        this.directory = directory
-        this.refreshEmitter = new vscode.EventEmitter()
+    /** @type {vscode.EventEmitter<void>} */
+    refreshEmitter 
+
+    /** @type {vscode.Event<void>} */
+    onDidChangeTreeData
+
+    constructor() {
+        this.refreshEmitter      = new vscode.EventEmitter()
         this.onDidChangeTreeData = this.refreshEmitter.event
-    }
-     
-    /**
-     * @param {SarifFile | SarifResult | SarifRelatedLocation} entry
-     * @returns {vscode.TreeItem}
-     */
-    getTreeItem(entry) {
-        return entry.getTreeItem()
+        this._sarifFileList      = new SarifFileList()
     }
 
     /**
-     * @param {SarifFile | SarifResult | SarifRelatedLocation | undefined} entry
-     * @returns {Promise<Array<SarifFile | SarifResult | SarifRelatedLocation>>}
+     * @param {SarifFile | SarifResult | SarifRelatedLocation} element
+     * @returns {vscode.TreeItem}
      */
-    async getChildren(entry) {
-        if (entry == undefined) {
-            const sarifFiles = []
-            if (vscode.workspace.workspaceFolders != undefined)
-                for (const workspaceFolder of vscode.workspace.workspaceFolders) {
-                    const directory = vscode.Uri.joinPath(workspaceFolder.uri, this.directory)
+    getTreeItem(element) {
+        const treeItem = element.treeItem
+        treeItem.collapsibleState = 
+            element.children.length >= 1 ? 
+                vscode.TreeItemCollapsibleState.Collapsed :
+                vscode.TreeItemCollapsibleState.None
+        return treeItem
+    }
+
+    /**
+     * @param {void | SarifFile | SarifResult | SarifRelatedLocation} element
+     * @returns {Promise<SarifFile[] | SarifResult[] | SarifRelatedLocation[]>}
+     */
+    async getChildren(element) {
+        if (element == undefined) {
+            this._sarifFileList = await new SarifFileList().create() 
+            return this._sarifFileList.children
+        }
+        else
+            return element.children
+    }
+
+    /**
+     * @returns {void}
+     */
+    refresh() {
+        this.refreshEmitter.fire()
+    }
+
+    /** @type {SarifFileList} */
+    _sarifFileList
+}
+
+class SarifFileList {
+    /** @type {SarifFile[]} */
+    children
+
+    constructor() {
+        this.children = []
+    }
+
+    /** @returns {Promise<SarifFileList>} */
+    async create() {
+        if (vscode.workspace.workspaceFolders != undefined)
+            for (const workspaceFolder of vscode.workspace.workspaceFolders) {
+                const directory = vscode.Uri.joinPath(workspaceFolder.uri, vscode.workspace.getConfiguration('cppsarif').get('sarifDirectory') ?? '.')
                     try {
                         for await (const file of _recursiveIterateDirectory(directory))
                             if (file.path.endsWith('.sarif')) {
                                 try {
-                                    const sarifFile = await SarifFile.readFrom(file)
-                                    if (sarifFile.getChildren().length >= 1)
-                                        sarifFiles.push(sarifFile)
+                                    const sarifFile = await new SarifFile().read(directory, file)
+                                    if (sarifFile.children.length >= 1)
+                                        this.children.push(sarifFile)
                                 }
                                 catch (error) {
                                     console.warn(`reading sarif file failed (with file = ${file}: ${error}`)
@@ -58,174 +99,111 @@ class Sarif {
                         console.warn(`reading sarif directory failed (with directory = ${directory}): ${error}`)
                     }
                 }
-            return sarifFiles
-        }
-        else
-            return entry.getChildren()
-    }
-
-    /**
-     * @returns {void}
-     */
-    refresh() {
-        this.refreshEmitter.fire(null)
+        return this
     }
 }
 
 class SarifFile {    
+    /** @type {vscode.TreeItem} */
+    treeItem
+
+    /** @type {SarifResult[]} */
+    children
+
     constructor() {
-        /** @type {vscode.Uri} */
-        this.uri = undefined
-        
+        this.treeItem = new vscode.TreeItem('')
+        this.children = []
     }
 
     /**
-     * @param {vscode.Uri} uri
+     * @param {vscode.Uri} directory
+     * @param {vscode.Uri} file
      * @returns {Promise<SarifFile>}
      */
-    static async readFrom(uri) {
-        const sarifFile = new SarifFile()
-        Object.assign(sarifFile, JSON.parse(Buffer.from(await vscode.workspace.fs.readFile(uri)).toString('utf-8')))
-        sarifFile.uri      = uri
-        sarifFile.children = []
-        for (const run of sarifFile.runs)
+    async read(directory, file) {
+        const sarif            = JSON.parse((await vscode.workspace.fs.readFile(file)).toString())
+        this.treeItem          = new vscode.TreeItem('')
+        this.treeItem.label    = path.relative(directory.fsPath, file.fsPath).replace(/\.sarif$/, '')
+        this.treeItem.iconPath = _getIconPath('file')
+        for (const run of sarif.runs)
             for (const result of run.results)
-                sarifFile.children.push(new SarifResult(result, run))
-        return sarifFile
-    }
-
-    /**
-     * @returns {vscode.TreeItem}
-     */
-    getTreeItem() { 
-        return {
-            iconPath: _getIconPath('file'),
-            label: this.uri.path.split('/').at(-1).slice(0, -'.sarif'.length),
-            collapsibleState: this.getChildren().length >= 1 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None
-        }
-    }
-
-    /**
-     * @returns {SarifResult[]}
-     */
-    getChildren() {
-        return this.children
+                this.children.push(new SarifResult(result, run))
+        return this
     }
 }
 
 class SarifResult {
+    /** @type {vscode.TreeItem} */
+    treeItem
+
+    /** @type {SarifRelatedLocation[]} */
+    children
+
     /**
-     * @param {object} object
-     * @param {object} parentRun
+     * @param {Json} result
+     * @param {Json} parentRun
      */
-    constructor(object, parentRun) {
-        Object.assign(this, object)
-        this.parentRun = parentRun
-        this.children  = []
-        this.locationIndex = 0
-        if (this.relatedLocations != undefined) {
+    constructor(result, parentRun) {
+        this.treeItem              = new vscode.TreeItem('')
+        this.treeItem.label        = result.message.text
+        this.treeItem.iconPath     = _getIconPath(result.level)
+        this.treeItem.command      = result.locations != undefined ? _showPhysicalLocation(result.locations[0].physicalLocation, parentRun.originalUriBaseIds) : undefined
+        this.children              = []
+        if (result.relatedLocations != undefined) {
+            /** @type {Map<number, any>} */
             const mountable = new Map([[-1, this], [0, this]])
-            for (const relatedLocation of this.relatedLocations)
+            for (const relatedLocation of result.relatedLocations)
                 if (relatedLocation.message != undefined) {
-                    const sarifRelatedLocation = new SarifRelatedLocation(relatedLocation, this.parentRun)
-                    mountable.get(relatedLocation.properties.nestingLevel - 1).mountChild(sarifRelatedLocation)
+                    const sarifRelatedLocation = new SarifRelatedLocation(relatedLocation, parentRun)
+                    mountable.get(relatedLocation.properties.nestingLevel - 1)?.children.push(sarifRelatedLocation)
                     mountable.set(relatedLocation.properties.nestingLevel, sarifRelatedLocation)  
                 }                        
         }
     }
-
-    /**
-     * @returns {vscode.TreeItem}
-     */
-    getTreeItem() {
-        this.locationIndex++
-        return {
-            iconPath: _getIconPath(this.level),
-            label: this.message.text,
-            command: this.locations != undefined ? _showPhysicalLocation(this.locations[this.locationIndex % this.locations.length].physicalLocation, this.parentRun.originalUriBaseIds) : undefined,
-            collapsibleState: this.getChildren().length >= 1 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None
-        }
-    }
-
-    /**
-     * @returns {SarifRelatedLocation[]}
-     */
-    getChildren() {
-        return this.children
-    }
-
-    /**
-     * @param {SarifRelatedLocation} child
-     * @returns {void}
-     */
-    mountChild(child) {
-        this.children.push(child)
-    }
 }
 
 class SarifRelatedLocation {
-    /**
-     * @param {object} object
-     * @param {object} parentRun
-     */
-    constructor(object, parentRun) {
-        Object.assign(this, object)
-        this.parentRun = parentRun
-        this.children  = []
-    }
+    /** @type {vscode.TreeItem} */
+    treeItem
+
+    /** @type {SarifRelatedLocation[]} */
+    children
 
     /**
-     * @returns {vscode.TreeItem}
+     * @param {Json} relatedLocation
+     * @param {Json} parentRun
      */
-    getTreeItem() {
-        return {
-            iconPath: _getIconPath('note'),
-            label: this.message.text,
-            command: this.physicalLocation != undefined ? _showPhysicalLocation(this.physicalLocation, this.parentRun.originalUriBaseIds) : undefined,
-            collapsibleState: this.getChildren().length >= 1 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None
-        }
-    }
-
-    /**
-     * @returns {SarifRelatedLocation[]}
-     */
-    getChildren() {
-        return this.children
-    }
-
-    /**
-     * @param {SarifRelatedLocation} child
-     * @returns {void}
-     */
-    mountChild(child) {
-        this.children.push(child)
+    constructor(relatedLocation, parentRun) {
+        this.treeItem          = new vscode.TreeItem('')
+        this.treeItem.label    = relatedLocation.message.text
+        this.treeItem.iconPath = _getIconPath('note')
+        this.treeItem.command  = relatedLocation.physicalLocation != undefined ? _showPhysicalLocation(relatedLocation.physicalLocation, parentRun.originalUriBaseIds) : undefined
+        this.children          = []
     }
 }
 
-const sarif = new Sarif(vscode.workspace.getConfiguration('cppsarif').get('sarifDirectory'))
+const sarif = new Sarif()
 
 const sarifView = vscode.window.createTreeView('sarifView', {
     treeDataProvider: sarif
 })
 
-const sarifRefreshCommand = vscode.commands.registerCommand('sarifRefresh', () => {
+const sarifRefreshCommand = vscode.commands.registerCommand('sarifRefreshCommand', () => {
     sarif.refresh()
 })
 
 const sarifRefreshDaemon = sarifView.onDidChangeVisibility(view => {
     if (view.visible)
-        vscode.commands.executeCommand('sarifRefresh')
+        vscode.commands.executeCommand('sarifRefreshCommand')
 })
 
-const sarifFocusDaemon = vscode.tasks.onDidEndTask(task => {
-    if (task.exitCode != 0) {
-        vscode.commands.executeCommand('sarifRefresh')
-        if (sarif.getChildren().length >= 1)
-            vscode.commands.executeCommand('sarifView.focus')
-    }
+const sarifFocusDaemon = vscode.tasks.onDidEndTask(async task => {
+    vscode.commands.executeCommand('sarifRefresh')
+    if ((await sarif.getChildren()).length >= 1)
+        vscode.commands.executeCommand('sarifView.focus')
 })
 
-const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysicalLocation', async (physicalLocation, originalUriBaseIds) => {
+const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysicalLocationCommand', async (physicalLocation, originalUriBaseIds) => {
     const editor = await vscode.window.showTextDocument(
         physicalLocation.artifactLocation.uriBaseId != undefined ? 
             vscode.Uri.joinPath(vscode.Uri.parse(originalUriBaseIds[physicalLocation.artifactLocation.uriBaseId].uri), physicalLocation.artifactLocation.uri) : 
@@ -246,6 +224,23 @@ const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysica
     editor.selection = new vscode.Selection(selectBegin, selectEnd)
 })
 
+
+
+/** @typedef {Record<string, any>} Json */
+
+/**
+ * @param {vscode.Uri} directory
+ * @returns {AsyncGenerator<vscode.Uri>}
+ */
+async function* _recursiveIterateDirectory(directory) {
+    for await (const [name, fileType] of await vscode.workspace.fs.readDirectory(directory))
+        if (fileType == vscode.FileType.File)
+            yield vscode.Uri.joinPath(directory, name)
+        else if (fileType == vscode.FileType.Directory)
+            for await (const subfile of _recursiveIterateDirectory(vscode.Uri.joinPath(directory, name)))
+                yield subfile
+}
+
 /**
  * @param {string} name
  * @returns {vscode.ThemeIcon}
@@ -260,25 +255,15 @@ function _getIconPath(name) {
 }
 
 /**
- * @param {vscode.Uri} directory
- * @returns {AsyncGenerator<vscode.Uri>}
- */
-async function* _recursiveIterateDirectory(directory) {
-    for await (const [name, fileType] of await vscode.workspace.fs.readDirectory(directory))
-        if (fileType == vscode.FileType.File)
-            yield vscode.Uri.joinPath(directory, name)
-        else if (fileType == vscode.FileType.Directory)
-            yield _recursiveIterateDirectory(vscode.Uri.joinPath(directory, name))
-}
-
-/**
- * @param {object} physicalLocation
- * @param {object} originalUriBaseIds
- * @returns {{command: string, arguments: object[]}}
+ * @param {Json} physicalLocation
+ * @param {Json} originalUriBaseIds
+ * @returns {vscode.Command}
  */
 function _showPhysicalLocation(physicalLocation, originalUriBaseIds) {
     return {
-        command: 'showPhysicalLocation',
+        title    : 'showPhysicalLocationCommand',
+        command  : 'showPhysicalLocationCommand',
+        tooltip  : 'showPhysicalLocationCommand',
         arguments: [physicalLocation, originalUriBaseIds]
     }
 }

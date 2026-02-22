@@ -1,4 +1,3 @@
 {
-    "cppsarif.sarifDirectory": "test",
     "javascript.validate.enable": true,
 }
