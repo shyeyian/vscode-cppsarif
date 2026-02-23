@@ -11,6 +11,10 @@ async function main() {
     await fs.promises.rm('cpptheme.vsix')
 }
 
+
+
 const _execFile = util.promisify(child_process.execFile)
+
+
 
 main()

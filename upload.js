@@ -21,6 +21,10 @@ async function main() {
     await _execFile('git', ['push'])
 }
 
+
+
 const _execFile = util.promisify(child_process.execFile)
+
+
 
 main()

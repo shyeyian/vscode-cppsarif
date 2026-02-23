@@ -2,19 +2,6 @@
 
 const path   = require('path')
 const vscode = require('vscode')
-module.exports = {activate}
-
-/**
- * @param {vscode.ExtensionContext} context
- * @returns {void}
- */
-function activate(context) {
-    context.subscriptions.push(sarifView)
-    context.subscriptions.push(sarifRefreshCommand)
-    context.subscriptions.push(sarifRefreshDaemon)
-    context.subscriptions.push(sarifFocusDaemon)
-    context.subscriptions.push(showPhysicalLocationCommand)
-}
 
 /**
  * @implements {vscode.TreeDataProvider<SarifFile | SarifResult | SarifRelatedLocation>}
@@ -140,8 +127,8 @@ class SarifResult {
     children
 
     /**
-     * @param {Json} result
-     * @param {Json} parentRun
+     * @param {_Json} result
+     * @param {_Json} parentRun
      */
     constructor(result, parentRun) {
         this.treeItem              = new vscode.TreeItem('')
@@ -170,8 +157,8 @@ class SarifRelatedLocation {
     children
 
     /**
-     * @param {Json} relatedLocation
-     * @param {Json} parentRun
+     * @param {_Json} relatedLocation
+     * @param {_Json} parentRun
      */
     constructor(relatedLocation, parentRun) {
         this.treeItem          = new vscode.TreeItem('')
@@ -188,19 +175,8 @@ const sarifView = vscode.window.createTreeView('sarifView', {
     treeDataProvider: sarif
 })
 
-const sarifRefreshCommand = vscode.commands.registerCommand('sarifRefreshCommand', () => {
+const refreshSarifViewCommand = vscode.commands.registerCommand('refreshSarifViewCommand', () => {
     sarif.refresh()
-})
-
-const sarifRefreshDaemon = sarifView.onDidChangeVisibility(view => {
-    if (view.visible)
-        vscode.commands.executeCommand('sarifRefreshCommand')
-})
-
-const sarifFocusDaemon = vscode.tasks.onDidEndTask(async event => {
-    vscode.commands.executeCommand('sarifRefresh')
-    if ((await sarif.getChildren()).length >= 1)
-        vscode.commands.executeCommand('sarifView.focus')
 })
 
 const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysicalLocationCommand', async (physicalLocation, originalUriBaseIds) => {
@@ -224,9 +200,20 @@ const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysica
     editor.selection = new vscode.Selection(selectBegin, selectEnd)
 })
 
+const focusSarifViewDaemon = vscode.tasks.onDidEndTask(async event => {
+    vscode.commands.executeCommand('refreshSarifViewCommand')
+    if ((await sarif.getChildren()).length >= 1)
+        vscode.commands.executeCommand('sarifView.focus')
+})
+
+const refreshSarifViewDaemon = sarifView.onDidChangeVisibility(view => {
+    if (view.visible)
+        vscode.commands.executeCommand('refreshSarifViewCommand')
+})
 
 
-/** @typedef {Record<string, any>} Json */
+
+/** @typedef {Record<string, any>} _Json */
 
 /**
  * @param {vscode.Uri} directory
@@ -255,8 +242,8 @@ function _getIconPath(name) {
 }
 
 /**
- * @param {Json} physicalLocation
- * @param {Json} originalUriBaseIds
+ * @param {_Json} physicalLocation
+ * @param {_Json} originalUriBaseIds
  * @returns {vscode.Command}
  */
 function _showPhysicalLocation(physicalLocation, originalUriBaseIds) {
@@ -267,3 +254,19 @@ function _showPhysicalLocation(physicalLocation, originalUriBaseIds) {
         arguments: [physicalLocation, originalUriBaseIds]
     }
 }
+
+
+
+/**
+ * @param {vscode.ExtensionContext} context
+ * @returns {void}
+ */
+function activate(context) {
+    context.subscriptions.push(sarifView)
+    context.subscriptions.push(refreshSarifViewCommand)
+    context.subscriptions.push(showPhysicalLocationCommand)
+    context.subscriptions.push(focusSarifViewDaemon)
+    context.subscriptions.push(refreshSarifViewDaemon)
+}
+
+module.exports = {activate}
