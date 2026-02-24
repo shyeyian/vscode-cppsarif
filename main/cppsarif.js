@@ -46,7 +46,7 @@ class Sarif {
     }
 
     /**
-     * @returns {void}
+     * @returns {undefined}
      */
     refresh() {
         this.refreshEmitter.fire()
@@ -171,7 +171,7 @@ class SarifRelatedLocation {
 
 const sarif = new Sarif()
 
-const sarifView = vscode.window.createTreeView('sarifView', {
+const sarifView = vscode.window.createTreeView('sarif', {
     treeDataProvider: sarif
 })
 
@@ -179,7 +179,7 @@ const refreshSarifViewCommand = vscode.commands.registerCommand('refreshSarifVie
     sarif.refresh()
 })
 
-const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysicalLocationCommand', async (physicalLocation, originalUriBaseIds) => {
+const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysicalLocation', async (physicalLocation, originalUriBaseIds) => {
     const editor = await vscode.window.showTextDocument(
         physicalLocation.artifactLocation.uriBaseId != undefined ? 
             vscode.Uri.joinPath(vscode.Uri.parse(originalUriBaseIds[physicalLocation.artifactLocation.uriBaseId].uri), physicalLocation.artifactLocation.uri) : 
@@ -203,7 +203,7 @@ const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysica
 const focusSarifViewDaemon = vscode.tasks.onDidEndTask(async event => {
     vscode.commands.executeCommand('refreshSarifViewCommand')
     if ((await sarif.getChildren()).length >= 1)
-        vscode.commands.executeCommand('sarifView.focus')
+        vscode.commands.executeCommand('sarif.focus')
 })
 
 const refreshSarifViewDaemon = sarifView.onDidChangeVisibility(view => {
@@ -248,9 +248,9 @@ function _getIconPath(name) {
  */
 function _showPhysicalLocation(physicalLocation, originalUriBaseIds) {
     return {
-        title    : 'showPhysicalLocationCommand',
-        command  : 'showPhysicalLocationCommand',
-        tooltip  : 'showPhysicalLocationCommand',
+        title    : 'showPhysicalLocation',
+        command  : 'showPhysicalLocation',
+        tooltip  : 'showPhysicalLocation',
         arguments: [physicalLocation, originalUriBaseIds]
     }
 }
@@ -259,7 +259,7 @@ function _showPhysicalLocation(physicalLocation, originalUriBaseIds) {
 
 /**
  * @param {vscode.ExtensionContext} context
- * @returns {void}
+ * @returns {undefined}
  */
 function activate(context) {
     context.subscriptions.push(sarifView)

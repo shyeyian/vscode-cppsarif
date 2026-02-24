@@ -23,8 +23,8 @@
         "views": {
             "sarif": [
                 {
-                    "id": "sarifView",
-                    "name": "%title%",
+                    "id": "sarif",
+                    "name": "%analyze%",
                     "icon": "$(issues)"
                 }
             ]
@@ -33,7 +33,7 @@
             "activitybar": [
                 {
                     "id": "sarif",
-                    "title": "%title%",
+                    "title": "%analyze%",
                     "icon": "$(issues)"
                 }
             ]
