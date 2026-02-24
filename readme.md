@@ -5,13 +5,13 @@ Cppsarif is a vscode extension that organizes linear C++ compiler output into a 
 ## Show
 
 - Collapsed:
-![collapse](https://raw.githubusercontent.com/anonymouspc/cppsarif/main/share/collapse.png)
+![collapse](https://raw.githubusercontent.com/shyeyian/cppsarif/main/doc/collapse.png)
 
 - Expanded:
-![expand](https://raw.githubusercontent.com/anonymouspc/cppsarif/main/share/expand.png)
+![expand](https://raw.githubusercontent.com/shyeyian/cppsarif/main/doc/expand.png)
 
 - Click the tags on the right to jump directly to the corresponding code:
-![skip](https://raw.githubusercontent.com/anonymouspc/cppsarif/main/share/skip.png)
+![skip](https://raw.githubusercontent.com/shyeyian/cppsarif/main/doc/skip.png)
 
 ## Install
 

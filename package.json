@@ -15,7 +15,7 @@
         "type": "git",
         "url": "https://github.com/shyeyian/vscode-cppsarif"
     },
-    "main": "view/sarif.js",
+    "main": "main/cppsarif.js",
     "activationEvents": [
         "onStartupFinished"
     ],
@@ -48,8 +48,5 @@
                 }
             }
         }
-    },
-    "devDependencies": {
-        "@types/node": "^25.3.0"
     }
 }
