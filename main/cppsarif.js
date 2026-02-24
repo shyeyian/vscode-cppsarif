@@ -7,16 +7,13 @@ const vscode = require('vscode')
  * @implements {vscode.TreeDataProvider<SarifFile | SarifResult | SarifRelatedLocation>}
  */
 class Sarif {
-    /** @type {vscode.EventEmitter<void>} */
-    refreshEmitter 
-
     /** @type {vscode.Event<void>} */
     onDidChangeTreeData
 
     constructor() {
-        this.refreshEmitter      = new vscode.EventEmitter()
-        this.onDidChangeTreeData = this.refreshEmitter.event
         this._sarifFileList      = new SarifFileList()
+        this._refreshEmitter     = new vscode.EventEmitter()
+        this.onDidChangeTreeData = this._refreshEmitter.event
     }
 
     /**
@@ -49,11 +46,14 @@ class Sarif {
      * @returns {undefined}
      */
     refresh() {
-        this.refreshEmitter.fire()
+        this._refreshEmitter.fire()
     }
 
     /** @type {SarifFileList} */
     _sarifFileList
+
+    /** @type {vscode.EventEmitter<void>} */
+    _refreshEmitter
 }
 
 class SarifFileList {
@@ -174,7 +174,6 @@ const sarif = new Sarif()
 const sarifView = vscode.window.createTreeView('sarif', {
     treeDataProvider: sarif
 })
-
 
 const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysicalLocation', async (physicalLocation, originalUriBaseIds) => {
     const editor = await vscode.window.showTextDocument(
