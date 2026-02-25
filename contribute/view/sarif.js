@@ -43,7 +43,7 @@ class Sarif {
     }
 
     /**
-     * @returns {undefined}
+     * @returns {void}
      */
     refresh() {
         this._refreshEmitter.fire()
@@ -249,7 +249,7 @@ function _showPhysicalLocation(physicalLocation, originalUriBaseIds) {
 
 /**
  * @param {vscode.ExtensionContext} context
- * @returns {undefined}
+ * @returns {void}
  */
 function activate(context) {
     context.subscriptions.push(sarifView)

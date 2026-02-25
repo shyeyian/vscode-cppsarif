@@ -20,6 +20,20 @@
         "onStartupFinished"
     ],
     "contributes": {
+        "configuration": {
+            "title": "cppsarif",
+            "properties": {
+                "cppsarif.sarifDirectory": {
+                    "type": "string",
+                    "markdownDescription": "Path to compiler output sarif directory. Requires: containing single or multiple `.sarif` files. Default: `.`",
+                    "default": "."
+                }
+            }
+        },
+        "keybindings": {
+            "key": "ctrl+shift+m",
+            "command": "sarif.focus"
+        },
         "viewsContainers": {
             "activitybar": [
                 {
@@ -37,16 +51,6 @@
                     "icon": "$(issues)"
                 }
             ]
-        },
-        "configuration": {
-            "title": "cppsarif",
-            "properties": {
-                "cppsarif.sarifDirectory": {
-                    "type": "string",
-                    "markdownDescription": "Path to compiler output sarif directory. Requires: containing single or multiple `.sarif` files. Default: `.`",
-                    "default": "."
-                }
-            }
         }
     }
 }
