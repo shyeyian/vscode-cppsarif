@@ -15,25 +15,25 @@
         "type": "git",
         "url": "https://github.com/shyeyian/vscode-cppsarif"
     },
-    "main": "main/cppsarif.js",
+    "main": "contribute/view/sarif.js",
     "activationEvents": [
         "onStartupFinished"
     ],
     "contributes": {
-        "views": {
-            "sarif": [
+        "viewsContainers": {
+            "activitybar": [
                 {
-                    "id": "sarif",
-                    "name": "%analyze%",
+                    "id": "make",
+                    "title": "%make%",
                     "icon": "$(issues)"
                 }
             ]
         },
-        "viewsContainers": {
-            "activitybar": [
+        "views": {
+            "make": [
                 {
                     "id": "sarif",
-                    "title": "%analyze%",
+                    "name": "%sarif%",
                     "icon": "$(issues)"
                 }
             ]

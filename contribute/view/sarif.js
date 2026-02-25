@@ -175,6 +175,11 @@ const sarifView = vscode.window.createTreeView('sarif', {
     treeDataProvider: sarif
 })
 
+const refreshSarifViewDaemon = sarifView.onDidChangeVisibility(view => {
+    if (view.visible)
+        sarif.refresh()
+})
+
 const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysicalLocation', async (physicalLocation, originalUriBaseIds) => {
     const editor = await vscode.window.showTextDocument(
         physicalLocation.artifactLocation.uriBaseId != undefined ? 
@@ -194,17 +199,6 @@ const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysica
     )
     editor.revealRange(new vscode.Range(selectBegin, selectEnd), vscode.TextEditorRevealType.InCenter)
     editor.selection = new vscode.Selection(selectBegin, selectEnd)
-})
-
-const focusSarifViewDaemon = vscode.tasks.onDidEndTask(async event => {
-    sarif.refresh()
-    if ((await sarif.getChildren()).length >= 1)
-        vscode.commands.executeCommand('sarif.focus')
-})
-
-const refreshSarifViewDaemon = sarifView.onDidChangeVisibility(view => {
-    if (view.visible)
-        sarif.refresh()
 })
 
 
@@ -260,7 +254,6 @@ function _showPhysicalLocation(physicalLocation, originalUriBaseIds) {
 function activate(context) {
     context.subscriptions.push(sarifView)
     context.subscriptions.push(showPhysicalLocationCommand)
-    context.subscriptions.push(focusSarifViewDaemon)
     context.subscriptions.push(refreshSarifViewDaemon)
 }
 

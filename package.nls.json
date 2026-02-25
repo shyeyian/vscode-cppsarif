@@ -1,3 +1,4 @@
 {
-    "analyze": "Analyze"
+    "make": "Make",
+    "sarif": "Sarif"
 }
