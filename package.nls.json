@@ -1,4 +1,7 @@
 {
     "make": "Make",
-    "sarif": "Sarif"
+    "sarif": "Sarif",
+    "runTask": "Run Selected Task",
+    "selectTask": "Select Task",
+    "openTasksJson": "Open tasks.json"
 }

@@ -34,6 +34,42 @@
             "key": "ctrl+shift+m",
             "command": "sarif.focus"
         },
+        "commands": [
+            {
+                "command": "cppsarif.runTask",
+                "title": "%runTask%",
+                "icon": "$(debug-start)"
+            },
+            {
+                "command": "cppsarif.selectTask",
+                "title": "%selectTask%",
+                "icon": "$(chevron-down)"
+            },
+            {
+                "command": "cppsarif.openTasksJson",
+                "title": "%openTasksJson%",
+                "icon": "$(gear)"
+            }
+        ],
+        "menus": {
+            "view/title": [
+                {
+                    "command": "cppsarif.runTask",
+                    "when": "view == sarif",
+                    "group": "navigation@1"
+                },
+                {
+                    "command": "cppsarif.selectTask",
+                    "when": "view == sarif",
+                    "group": "navigation@2"
+                },
+                {
+                    "command": "cppsarif.openTasksJson",
+                    "when": "view == sarif",
+                    "group": "navigation@3"
+                }
+            ]
+        },
         "viewsContainers": {
             "activitybar": [
                 {

@@ -1,4 +1,7 @@
 {
     "make": "构建",
-    "sarif": "分析"
+    "sarif": "分析",
+    "runTask": "运行所选任务",
+    "selectTask": "选择任务",
+    "openTasksJson": "打开 tasks.json"
 }

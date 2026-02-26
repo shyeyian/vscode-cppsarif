@@ -2,6 +2,7 @@
 
 const path   = require('path')
 const vscode = require('vscode')
+const task   = require('./task.js')
 
 /**
  * @implements {vscode.TreeDataProvider<SarifFile | SarifResult | SarifRelatedLocation>}
@@ -255,6 +256,7 @@ function activate(context) {
     context.subscriptions.push(sarifView)
     context.subscriptions.push(showPhysicalLocationCommand)
     context.subscriptions.push(refreshSarifViewDaemon)
+    task.activate(context, sarifView)
 }
 
 module.exports = {activate}
