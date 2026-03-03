@@ -171,11 +171,11 @@ class SarifRelatedLocation {
 
 const sarif = new Sarif()
 
-const sarifView = vscode.window.createTreeView('sarif', {
+const makeView = vscode.window.createTreeView('make', {
     treeDataProvider: sarif
 })
 
-const refreshSarifViewDaemon = sarifView.onDidChangeVisibility(view => {
+const refreshMakeViewDaemon = makeView.onDidChangeVisibility(view => {
     if (view.visible)
         sarif.refresh()
 })
@@ -252,9 +252,9 @@ function _showPhysicalLocation(physicalLocation, originalUriBaseIds) {
  * @returns {void}
  */
 function activate(context) {
-    context.subscriptions.push(sarifView)
+    context.subscriptions.push(makeView)
     context.subscriptions.push(showPhysicalLocationCommand)
-    context.subscriptions.push(refreshSarifViewDaemon)
+    context.subscriptions.push(refreshMakeViewDaemon)
 }
 
 module.exports = {activate}

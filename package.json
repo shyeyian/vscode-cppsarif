@@ -1,7 +1,7 @@
 {
-    "name": "cppsarif",
-    "displayName": "cppsarif",
-    "description": "cppsarif",
+    "name": "cppmake",
+    "displayName": "cppmake",
+    "description": "cppmake",
     "icon": "share/package.png",
     "publisher": "shyeyian",
     "version": "1.1.50",
@@ -13,41 +13,32 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/shyeyian/vscode-cppsarif"
+        "url": "https://github.com/shyeyian/vscode-cppmake"
     },
-    "main": "contribute/view/sarif.js",
+    "main": "contribute/view/make.js",
     "activationEvents": [
         "onStartupFinished"
     ],
     "contributes": {
         "configuration": {
-            "title": "cppsarif",
+            "title": "cppmake",
             "properties": {
-                "cppsarif.sarifDirectory": {
+                "cppmake.sarifDirectory": {
                     "type": "string",
-                    "markdownDescription": "Path to compiler output sarif directory. Requires: containing single or multiple `.sarif` files. Default: `.`",
+                    "markdownDescription": "Path to a specific directory where contains several `.sarif` files",
                     "default": "."
                 }
             }
         },
         "keybindings": {
             "key": "ctrl+shift+m",
-            "command": "sarif.focus"
-        },
-        "viewsContainers": {
-            "activitybar": [
-                {
-                    "id": "make",
-                    "title": "%make%",
-                    "icon": "$(issues)"
-                }
-            ]
+            "command": "make.focus"
         },
         "views": {
             "make": [
                 {
-                    "id": "sarif",
-                    "name": "%sarif%",
+                    "id": "make",
+                    "name": "%contributes.views.make.name%",
                     "icon": "$(issues)"
                 }
             ]
