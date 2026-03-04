@@ -4,27 +4,21 @@ const child_process = require('child_process')
 const fs            = require('fs')
 const util          = require('util')
 
-async function main() {
+async function upload() {
     // Git pull
-    await _execFile('git', ['pull'])
+    await util.promisify(child_process.execFile)('git', ['pull'])
 
     // Git commit
     try {
-        await _execFile('git', ['add', '.'])
-        await _execFile('git', ['commit', '-m', 'update'])
-    } catch (_) { }
+        await util.promisify(child_process.execFile)('git', ['add', '.'])
+        await util.promisify(child_process.execFile)('git', ['commit', '-m', 'update'])
+    } catch (error) { }
 
     // Vsce upload
-    await _execFile('vsce', ['publish', 'patch', '--pat', (await fs.promises.readFile('vsce-token.txt')).toString()])
+    await util.promisify(child_process.execFile)('vsce', ['publish', 'patch', '--pat', (await fs.promises.readFile('vsce-token.txt')).toString()])
 
     // Git push
-    await _execFile('git', ['push'])
+    await util.promisify(child_process.execFile)('git', ['push'])
 }
 
-
-
-const _execFile = util.promisify(child_process.execFile)
-
-
-
-main()
+upload()

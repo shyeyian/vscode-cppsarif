@@ -79,4 +79,16 @@ class TaskList {
 
 class Task {
     /** @type {vscode.TreeItem} */
+    treeItem
+
+    /** @param {_Json} task */
+    constructor(task) {
+        this.treeItem             = new vscode.TreeItem('')
+        this.treeItem.label       = task.label  ?? '[task]'
+        this.treeItem.description = task.detail ?? this.treeItem.label
+        this.treeItem.
+        
+    }
 }
+
+/** @typedef {Record<string, any>} _Json */
