@@ -4,7 +4,7 @@
     "description": "cppmake",
     "icon": "share/package.png",
     "publisher": "shyeyian",
-    "version": "1.1.50",
+    "version": "1.1.51",
     "engines": {
         "vscode": "^1.100.0"
     },
@@ -35,8 +35,7 @@
             "command": "make.focus"
         },
         "menus": {
-            "view/item/context": [
-            ]
+            "view/item/context": []
         },
         "viewsContainers": {
             "activitybar": [
