@@ -2,6 +2,13 @@
     "version": "2.0.0",
     "tasks": [
         {
+            "label": "test",
+            "detail": "test",
+            "group": "build",
+            "type": "shell",
+            "command": "echo ${workspaceFolder}",
+        },
+        {
             "label": "install",
             "detail": "node install.js",
             "group": "build",
@@ -10,13 +17,5 @@
                 "install.js"
             ]
         },
-
-        {
-            "label": "test",
-            "detail": "test",
-            "group": "build",
-            "type": "shell",
-            "command": "echo ${workspaceFolder}",
-        }
     ]
 }
