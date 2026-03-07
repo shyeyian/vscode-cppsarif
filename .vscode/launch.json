@@ -1,10 +1,14 @@
 {
+    "version": "0.2.0",
     "configurations": [
         {
-            "name"   : "hello-world",
-            "type"   : "debugpy",
+            "name": "main",
+            "type": "extensionHost",
             "request": "launch",
-            "code"   : "print('hello, world!')"
+            "args": [
+                "--extensionDevelopmentPath=${workspaceFolder}",
+                ""
+            ]
         }
     ]
 }

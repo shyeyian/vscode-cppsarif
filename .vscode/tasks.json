@@ -10,14 +10,13 @@
                 "install.js"
             ]
         },
+
         {
-            "label": "upload",
-            "detail": "node upload.js",
+            "label": "test",
+            "detail": "test",
             "group": "build",
-            "command": "node",
-            "args": [
-                "upload.js"
-            ]
+            "type": "shell",
+            "command": "echo ${workspaceFolder}",
         }
     ]
 }
