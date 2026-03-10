@@ -20,6 +20,23 @@
         "onStartupFinished"
     ],
     "contributes": {
+        "commands": [
+            {
+                "command": "startTask",
+                "title": "%Start Task%",
+                "icon": "$(run)"
+            },
+            {
+                "command": "selectTask",
+                "title": "%Select Task%",
+                "icon": "$(chevron-down)"
+            },
+            {
+                "command": "openTasksJson",
+                "title": "%Open 'tasks.json'%",
+                "icon": "$(gear)"
+            }
+        ],
         "configuration": {
             "title": "cppmake",
             "properties": {
@@ -35,7 +52,23 @@
             "command": "make.focus"
         },
         "menus": {
-            "view/item/context": []
+            "view/title": [
+                {
+                    "command": "startTask",
+                    "when": "view == sarif",
+                    "group": "navigation"
+                },
+                {
+                    "command": "selectTask",
+                    "when": "view == sarif",
+                    "group": "navigation"
+                },
+                {
+                    "command": "openTasksJson",
+                    "when": "view == sarif",
+                    "group": "navigation"
+                }
+            ]
         },
         "viewsContainers": {
             "activitybar": [

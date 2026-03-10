@@ -66,24 +66,22 @@ class SarifFileList {
 
     /** @returns {Promise<SarifFileList>} */
     async create() {
-        if (vscode.workspace.workspaceFolders != undefined)
-            for (const workspaceFolder of vscode.workspace.workspaceFolders) {
-                const directory = vscode.Uri.joinPath(workspaceFolder.uri, vscode.workspace.getConfiguration('cppsarif').get('sarifDirectory') ?? '.')
-                    try {
-                        for await (const file of _recursiveIterateDirectory(directory))
-                            if (file.path.endsWith('.sarif')) {
-                                try {
-                                    const sarifFile = await new SarifFile().read(directory, file)
-                                    if (sarifFile.children.length >= 1)
-                                        this.children.push(sarifFile)
-                                } catch (error) {
-                                    console.warn(`failed to read sarif file (with file = ${file})`, {cause: error})
-                                }
-                            }
-                    } catch (error) {
-                        console.warn(`failed to reading sarif directory (with directory = ${directory})`, {cause: error})
-                    }
-                }
+        for (const workspaceFolder of vscode.workspace.workspaceFolders ?? []) {
+            const directory = vscode.Uri.joinPath(workspaceFolder.uri, vscode.workspace.getConfiguration('cppsarif').get('sarifDirectory') ?? '.')
+            try {
+                for await (const file of _recursiveIterateDirectory(directory))
+                    if (file.path.endsWith('.sarif'))
+                        try {
+                            const sarifFile = await new SarifFile().read(directory, file)
+                            if (sarifFile.children.length >= 1)
+                                this.children.push(sarifFile)
+                        } catch (error) {
+                            console.warn(`failed to read sarif file (with file = ${file})`, {cause: error})
+                        }
+            } catch (error) {
+                console.warn(`failed to reading sarif directory (with directory = ${directory})`, {cause: error})
+            }
+        }
         return this
     }
 }
@@ -109,11 +107,10 @@ class SarifFile {
         const sarif            = JSON.parse((await vscode.workspace.fs.readFile(file)).toString())
         this.treeItem          = new vscode.TreeItem('')
         this.treeItem.label    = path.relative(directory.fsPath, file.fsPath).replace(/\.sarif$/, '')
-        this.treeItem.id       = path.relative(directory.fsPath, file.fsPath).replace(/\.sarif$/, '')
-        this.treeItem.iconPath = _getIconPath('file')
-        for (const run of sarif.runs)
-            for (const [resultIndex, result] of run.results.entries())
-                this.children.push(new SarifResult(result, resultIndex, run))
+        this.treeItem.iconPath = new vscode.ThemeIcon('file')
+        for (const run of sarif?.runs ?? [])
+            for (const result of run?.results ?? [])
+                this.children.push(new SarifResult(result, run))
         return this
     }
 }
@@ -127,25 +124,31 @@ class SarifResult {
 
     /**
      * @param {_Json} result
-     * @param {number} resultIndex
      * @param {_Json} parentRun
      */
-    constructor(result, resultIndex, parentRun) {
-        this.treeItem              = new vscode.TreeItem('')
-        this.treeItem.label        = result.message.text
-        this.treeItem.id           = resultIndex.toString()
-        this.treeItem.iconPath     = _getIconPath(result?.level)
-        this.treeItem.description  = result.locations[0].logicalLocations[0].name
-        this.treeItem.command      = _showPhysicalLocation(result.locations[0].physicalLocation, parentRun.originalUriBaseIds)
+    constructor(result, parentRun) {
+        this.treeItem             = new vscode.TreeItem('')
+        this.treeItem.label       = result?.message?.text
+        this.treeItem.iconPath    = result?.level == 'error'   ? new vscode.ThemeIcon('error')   :
+                                    result?.level == 'warning' ? new vscode.ThemeIcon('warning') :
+                                    result?.level == 'note'    ? new vscode.ThemeIcon('more')    : 
+                                    result?.level == 'none'    ? new vscode.ThemeIcon('more')    :
+                                                                 new vscode.ThemeIcon('more')
+     // this.treeItem.description = result?.locations?.[0]?.logicalLocations?.[0]?.name
+        this.treeItem.command     = {
+            title    : 'showPhysicalLocation',
+            command  : 'showPhysicalLocation',
+            arguments: [result?.locations?.[0]?.physicalLocation, parentRun?.originalUriBaseIds]
+        }
         this.children              = []
         /** @type {Map<number, any>} */
         const mountable = new Map([[-1, this], [0, this]])
-        for (const relatedLocation of result.relatedLocations)
-            if (relatedLocation.message != undefined) {
+        for (const relatedLocation of result?.relatedLocations ?? [])
+            if (relatedLocation?.message?.text != undefined) {
                 const sarifRelatedLocation = new SarifRelatedLocation(relatedLocation, parentRun)
-                mountable.get(relatedLocation.properties.nestingLevel - 1).children.push(sarifRelatedLocation)
-                mountable.set(relatedLocation.properties.nestingLevel, sarifRelatedLocation)  
-            }                        
+                mountable.get((relatedLocation?.properties?.nestingLevel ?? 0) - 1)?.children.push(sarifRelatedLocation)
+                mountable.set((relatedLocation?.properties?.nestingLevel ?? 0), sarifRelatedLocation)        
+            }            
     }
 }
 
@@ -162,11 +165,14 @@ class SarifRelatedLocation {
      */
     constructor(relatedLocation, parentRun) {
         this.treeItem             = new vscode.TreeItem('')
-        this.treeItem.label       = relatedLocation.message.text
-        this.treeItem.id          = relatedLocation.id
-        this.treeItem.iconPath    = _getIconPath('note')
-        this.treeItem.description = relatedLocation.logicalLocations[0].name
-        this.treeItem.command     = _showPhysicalLocation(relatedLocation.physicalLocation, parentRun.originalUriBaseIds)
+        this.treeItem.label       = relatedLocation?.message?.text
+        this.treeItem.iconPath    = new vscode.ThemeIcon('more')
+     // this.treeItem.description = relatedLocation?.logicalLocations?.[0]?.name
+        this.treeItem.command     = {
+            title    : 'showPhysicalLocation',
+            command  : 'showPhysicalLocation',
+            arguments: [relatedLocation?.physicalLocation, parentRun?.originalUriBaseIds]
+        }
         this.children             = []
     }
 }
@@ -184,20 +190,15 @@ const sarifViewRefreshDaemon = sarifView.onDidChangeVisibility(view => {
 
 const showPhysicalLocationCommand = vscode.commands.registerCommand('showPhysicalLocation', async (physicalLocation, originalUriBaseIds) => {
     const editor = await vscode.window.showTextDocument(
-        physicalLocation.artifactLocation.uriBaseId != undefined ? 
-            vscode.Uri.joinPath(vscode.Uri.parse(originalUriBaseIds[physicalLocation.artifactLocation.uriBaseId].uri), physicalLocation.artifactLocation.uri) : 
-            vscode.Uri.parse(physicalLocation.artifactLocation.uri),
-        {preview: false}
+        vscode.Uri.joinPath(vscode.Uri.parse(originalUriBaseIds?.[physicalLocation?.artifactLocation?.uriBaseId]?.uri ?? ''), physicalLocation?.artifactLocation?.uri)
     )
     const selectBegin = new vscode.Position(
-        physicalLocation.region.startLine   - 1, 
-        physicalLocation.region.startColumn - 1
+        (physicalLocation?.region?.startLine   ?? 1) - 1, 
+        (physicalLocation?.region?.startColumn ?? 1) - 1
     )
     const selectEnd = new vscode.Position(
-        physicalLocation.region.endLine != undefined ? 
-            physicalLocation.region.endLine   - 1 :
-            physicalLocation.region.startLine - 1, 
-        physicalLocation.region.endColumn - 1
+        (physicalLocation?.region?.endLine   ?? physicalLocation?.region?.startLine ?? 1) - 1,
+        (physicalLocation?.region?.endColumn ?? 1) - 1
     )
     editor.revealRange(new vscode.Range(selectBegin, selectEnd), vscode.TextEditorRevealType.InCenter)
     editor.selection = new vscode.Selection(selectBegin, selectEnd)
@@ -218,33 +219,6 @@ async function* _recursiveIterateDirectory(directory) {
         else if (fileType == vscode.FileType.Directory)
             for await (const subfile of _recursiveIterateDirectory(vscode.Uri.joinPath(directory, name)))
                 yield subfile
-}
-
-/**
- * @param {string} name
- * @returns {vscode.ThemeIcon}
- */
-function _getIconPath(name) {
-    // Explicit write each case here.
-    return name == 'file'    ? new vscode.ThemeIcon('file')    :
-           name == 'error'   ? new vscode.ThemeIcon('error')   :
-           name == 'warning' ? new vscode.ThemeIcon('warning') :
-           name == 'note'    ? new vscode.ThemeIcon('more')    :
-                               new vscode.ThemeIcon('more')
-}
-
-/**
- * @param {_Json} physicalLocation
- * @param {_Json} originalUriBaseIds
- * @returns {vscode.Command}
- */
-function _showPhysicalLocation(physicalLocation, originalUriBaseIds) {
-    return {
-        title    : 'showPhysicalLocation',
-        command  : 'showPhysicalLocation',
-        tooltip  : 'showPhysicalLocation',
-        arguments: [physicalLocation, originalUriBaseIds]
-    }
 }
 
 
