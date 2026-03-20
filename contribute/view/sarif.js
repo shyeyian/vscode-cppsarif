@@ -67,7 +67,7 @@ class SarifFileList {
     /** @returns {Promise<SarifFileList>} */
     async create() {
         for (const workspaceFolder of vscode.workspace.workspaceFolders ?? []) {
-            const directory = vscode.Uri.joinPath(workspaceFolder.uri, vscode.workspace.getConfiguration('cppsarif').get('sarifDirectory') ?? '.')
+            const directory = vscode.Uri.joinPath(workspaceFolder.uri, vscode.workspace.getConfiguration('cppmake').get('sarifDirectory') ?? '.')
             try {
                 for await (const file of _recursiveIterateDirectory(directory))
                     if (file.path.endsWith('.sarif'))
