@@ -48,8 +48,8 @@
             }
         },
         "keybindings": {
-            "key": "ctrl+shift+m",
-            "command": "make.focus"
+            "key": "ctrl+shift+b",
+            "command": "build.focus"
         },
         "menus": {
             "view/title": [
@@ -73,8 +73,8 @@
         "viewsContainers": {
             "activitybar": [
                 {
-                    "id": "make",
-                    "title": "%Make%",
+                    "id": "build",
+                    "title": "%Build%",
                     "icon": "$(issues)"
                 },
                 {
@@ -85,7 +85,7 @@
             ]
         },
         "views": {
-            "make": [
+            "build": [
                 {
                     "id": "sarif",
                     "name": "%Sarif%",
